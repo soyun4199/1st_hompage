@@ -1,0 +1,879 @@
+import React, { useState, useEffect } from "react";
+
+/* =========================
+   공통: 레벨 / 보상 시스템 훅
+   ========================= */
+function useRewardSystem() {
+  const [xp, setXp] = useState(0);
+  const [level, setLevel] = useState(1);
+
+  const addXp = (amount) => {
+    setXp((prev) => prev + amount);
+  };
+
+  useEffect(() => {
+    // 100XP마다 레벨업
+    const newLevel = Math.floor(xp / 100) + 1;
+    setLevel(newLevel);
+  }, [xp]);
+
+  return { xp, level, addXp };
+}
+
+/* =========================
+   1-1. 오늘의 작은 목표 (Micro Goals)
+   ========================= */
+function MicroGoalsSection({ addXp }) {
+  const baseGoals = [
+    "물 한 컵 마시기",
+    "오늘 공부 20분만 해보기",
+    "방 정리 5분만 하기",
+    "밖에 나가서 5분 산책하기",
+    "오늘 해야 할 일 3개 적어보기",
+    "휴대폰 내려놓고 10분 집중하기",
+  ];
+
+  const [goals, setGoals] = useState(() =>
+    baseGoals.slice(0, 3).map((text, idx) => ({
+      id: idx + 1,
+      text,
+      done: false,
+    }))
+  );
+
+  const handleToggle = (id) => {
+    setGoals((prev) =>
+      prev.map((g) => {
+        if (g.id === id) {
+          const newDone = !g.done;
+          // 처음 완료 상태로 바뀔 때 XP 지급
+          if (!g.done && newDone) {
+            addXp(15); // 작은 목표 1개 = 15XP
+          }
+          return { ...g, done: newDone };
+        }
+        return g;
+      })
+    );
+  };
+
+  const handleShuffle = () => {
+    const shuffled = [...baseGoals].sort(() => Math.random() - 0.5);
+    setGoals(
+      shuffled.slice(0, 3).map((text, idx) => ({
+        id: idx + 1,
+        text,
+        done: false,
+      }))
+    );
+  };
+
+  const completedCount = goals.filter((g) => g.done).length;
+
+  return (
+    <div className="card">
+      <h2> 오늘의 작은 목표</h2>
+      <p className="sub">
+        거창한 계획 말고, 지금 당장 할 수 있는 아주 작은 행동부터 시작해보는 영역입니다.
+      </p>
+      <ul className="goal-list">
+        {goals.map((goal) => (
+          <li key={goal.id} className="goal-item">
+            <label>
+              <input
+                type="checkbox"
+                checked={goal.done}
+                onChange={() => handleToggle(goal.id)}
+              />
+              <span className={goal.done ? "goal-done" : ""}>{goal.text}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+      <div className="goal-footer">
+        <span>
+          완료한 목표: {completedCount} / {goals.length}
+        </span>
+        <button onClick={handleShuffle}>목표 다시 섞기</button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================
+   1-2. 활동 기록 (은둔·쉬었음 세대 감소용)
+   ========================= */
+function ActivityTrackerSection({ addXp }) {
+  const [activities, setActivities] = useState([
+    { id: "study", label: "공부하기", count: 0 },
+    { id: "walk", label: "산책/외출하기", count: 0 },
+    { id: "talk", label: "사람과 대화 나누기", count: 0 },
+    { id: "stretch", label: "스트레칭/간단 운동", count: 0 },
+    { id: "selfcare", label: "자기관리(샤워, 정리 등)", count: 0 },
+  ]);
+
+  const handleClick = (id) => {
+    setActivities((prev) =>
+      prev.map((a) =>
+        a.id === id ? { ...a, count: a.count + 1 } : a
+      )
+    );
+    addXp(10); // 작은 활동 1회 = 10XP
+  };
+
+  const maxCount = Math.max(...activities.map((a) => a.count), 1);
+
+  return (
+    <div className="card">
+      <h2> 오늘의 활동 기록</h2>
+      <p className="sub">
+        “아무것도 안 한 것 같아…”라는 기분을 줄이기 위해,  
+        아주 작은 행동이라도 기록해서 눈에 보이게 만들어주는 영역입니다.
+      </p>
+
+      <div className="activity-buttons">
+        {activities.map((a) => (
+          <button key={a.id} onClick={() => handleClick(a.id)}>
+            {a.label} +1
+          </button>
+        ))}
+      </div>
+
+      <div className="activity-chart">
+        {activities.map((a) => (
+          <div key={a.id} className="activity-row">
+            <div className="activity-label">
+              {a.label} ({a.count})
+            </div>
+            <div className="activity-bar-bg">
+              <div
+                className="activity-bar-fill"
+                style={{
+                  width: `${(a.count / maxCount) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* =========================
+   2-1. 뽀모도로 타이머
+   ========================= */
+function PomodoroTimer({ onComplete }) {
+  const [minutes, setMinutes] = useState(25);
+  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    setSecondsLeft(minutes * 60);
+  }, [minutes]);
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const timer = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setIsRunning(false);
+          onComplete();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isRunning, onComplete]);
+
+  const formatTime = (totalSeconds) => {
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const handleStart = () => {
+    if (secondsLeft > 0) setIsRunning(true);
+  };
+
+  const handlePause = () => {
+    setIsRunning(false);
+  };
+
+  const handleReset = () => {
+    setIsRunning(false);
+    setSecondsLeft(minutes * 60);
+  };
+
+  return (
+    <div className="card">
+      <h2>⏱ 뽀모도로 공부 타이머</h2>
+      <p className="sub">
+        25분 집중 + 5분 휴식처럼, 짧은 집중을 반복해서 공부 의지를 유지하는 방법입니다.
+      </p>
+
+      <label>
+        타이머 (분):
+        <input
+          type="number"
+          min={1}
+          max={120}
+          value={minutes}
+          onChange={(e) => setMinutes(Number(e.target.value) || 1)}
+        />
+      </label>
+
+      <div className="timer-display">{formatTime(secondsLeft)}</div>
+
+      <div className="btn-row">
+        <button onClick={handleStart} disabled={isRunning || secondsLeft === 0}>
+          시작
+        </button>
+        <button onClick={handlePause} disabled={!isRunning}>
+          일시정지
+        </button>
+        <button onClick={handleReset}>리셋</button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================
+   2-2. 공부 대결 방
+   ========================= */
+function StudyRooms({ pomodoroCount }) {
+  const [joinedRoom, setJoinedRoom] = useState(null);
+
+  const rooms = [
+    { id: 1, name: "아침형 공부방", avgPomodoro: 3, members: 8 },
+    { id: 2, name: "밤샘 코딩방", avgPomodoro: 5, members: 12 },
+    { id: 3, name: "은둔 탈출 챌린지방", avgPomodoro: 2, members: 6 },
+  ];
+
+  return (
+    <div className="card">
+      <h2>⚔ 공부 대결 방</h2>
+      <p className="sub">
+        방에 참여해서 다른 사람들과 뽀모도로 개수를 비교하며  
+        게임처럼 공부할 수 있는 가상의 공간입니다. (데모 버전)
+      </p>
+
+      <ul className="room-list">
+        {rooms.map((room) => (
+          <li
+            key={room.id}
+            className={
+              joinedRoom === room.id ? "room-item room-item-joined" : "room-item"
+            }
+          >
+            <div>
+              <div className="room-name">{room.name}</div>
+              <div className="room-sub">
+                평균 뽀모도로: {room.avgPomodoro}회 / 인원 {room.members}명
+              </div>
+            </div>
+            {joinedRoom === room.id ? (
+              <span className="badge">참여 중</span>
+            ) : (
+              <button onClick={() => setJoinedRoom(room.id)}>입장</button>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {joinedRoom && (
+        <div className="card inner">
+          <h3>현재 방 내 나의 기록</h3>
+          <p>오늘 완료한 뽀모도로: {pomodoroCount}회</p>
+          <p className="sub">
+            실제 서비스에서는 여기서 다른 사람과의 순위 비교,  
+            랭킹, 추가 보상 등으로 확장할 수 있습니다.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================
+   3-1. 챗봇 대화
+   ========================= */
+function ChatbotSection({ level }) {
+  const [messages, setMessages] = useState([
+    { from: "bot", text: "안녕! 오늘은 어떤 작은 목표부터 시작해볼까?" },
+  ]);
+  const [input, setInput] = useState("");
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    const userMsg = { from: "user", text: input.trim() };
+
+    let reply = "그 말을 들으니까, 아주 작은 목표 하나만 정해보는 건 어때?";
+    const text = input.trim();
+
+    if (text.includes("하기 싫") || text.includes("귀찮")) {
+      reply = "그럴 때는 '5분만 해보기'를 추천할게. 5분 후에 멈춰도 괜찮아!";
+    } else if (text.includes("불안") || text.includes("걱정")) {
+      reply = "불안한 마음을 적어보는 것도 도움이 돼. 그리고 지금 할 수 있는 행동을 하나만 골라보자.";
+    } else if (text.includes("은둔") || text.includes("사람")) {
+      reply =
+        "사람들을 바로 만나는 게 부담된다면, 먼저 익명 한줄 대화부터 시도해보는 건 어때?";
+    }
+
+    const botMsg = { from: "bot", text: reply };
+    setMessages((prev) => [...prev, userMsg, botMsg]);
+    setInput("");
+  };
+
+  return (
+    <div className="card">
+      <h2> 단계 1: 챗봇과 대화하기</h2>
+      <p className="sub">
+        공부 의지·감정 상태에 대해 가볍게 이야기하면서,  
+        다음에 할 행동을 함께 정해보는 단계입니다. (현재 레벨: {level})
+      </p>
+
+      <div className="chat-window">
+        {messages.map((m, idx) => (
+          <div
+            key={idx}
+            className={m.from === "bot" ? "chat-bot" : "chat-user"}
+          >
+            {m.text}
+          </div>
+        ))}
+      </div>
+
+      <div className="chat-input-row">
+        <input
+          type="text"
+          placeholder="지금 상태나 고민을 적어보세요..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+        />
+        <button onClick={handleSend}>전송</button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================
+   3-2. 익명 한줄 채팅
+   ========================= */
+function AnonymousChatSection({ level }) {
+  const [messages, setMessages] = useState([
+    { nickname: "익명1", text: "오늘은 방에서 나와서 도서관에서 공부 시작했어요." },
+    { nickname: "익명2", text: "오랜만에 산책 나갔다 왔어요 :)" },
+  ]);
+  const [input, setInput] = useState("");
+
+  if (level < 2) {
+    return (
+      <div className="card card-locked">
+        <h2> 단계 2: 익명 한줄 대화</h2>
+        <p>
+          레벨 2부터 해금됩니다.  
+          뽀모도로 / 작은 목표 / 활동 기록으로 XP를 모으면 잠금이 풀려요.
+        </p>
+      </div>
+    );
+  }
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    const newMsg = { nickname: "나(익명)", text: input.trim() };
+    setMessages((prev) => [...prev, newMsg]);
+    setInput("");
+  };
+
+  return (
+    <div className="card">
+      <h2> 단계 2: 익명 한줄 대화</h2>
+      <p className="sub">
+        닉네임만 보이는 익명 공간입니다. 길게 말하지 않아도 괜찮아요.  
+        오늘 한 행동이나 느낀 점을 한 줄만 남겨보세요.
+      </p>
+
+      <div className="anon-window">
+        {messages.map((m, idx) => (
+          <div key={idx} className="anon-msg">
+            <strong>{m.nickname}:</strong> {m.text}
+          </div>
+        ))}
+      </div>
+
+      <div className="chat-input-row">
+        <input
+          type="text"
+          placeholder="오늘의 한 줄을 남겨보세요..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+        />
+        <button onClick={handleSend}>전송</button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================
+   3-3. 전화 / 영상 통화 + 스티커 (UI 데모)
+   ========================= */
+function CallSection({ level }) {
+  if (level < 3) {
+    return (
+      <div className="card card-locked">
+        <h2> 단계 3: 음성 · 영상 통화(스티커)</h2>
+        <p>
+          레벨 3부터 해금됩니다.  
+          챗봇 → 익명 대화 → 통화 순서로, 사람과의 연결을 단계적으로 확장하는 구조입니다.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card">
+      <h2> 단계 3: 음성 · 영상 통화 (스티커)</h2>
+      <p className="sub">
+        이 영역은 실제 통화 기능 대신,  
+        “어떻게 확장될 수 있는지”를 보여주는 UI 데모입니다.
+      </p>
+
+      <div className="call-layout">
+        <div className="call-box">
+          <h3> 음성 통화</h3>
+          <p>상대방과 부담 없이 목소리로만 대화할 수 있는 모드입니다.</p>
+          <button>음성 통화 요청하기 (데모)</button>
+        </div>
+
+        <div className="call-box">
+          <h3> 영상 통화 + 얼굴 스티커</h3>
+          <p>
+            얼굴 전체가 보이는 것이 부담된다면,  
+            얼굴 위에 스티커를 얹어서 영상 통화를 할 수 있는 모드입니다.
+          </p>
+          <div className="video-preview">
+            <div className="face-placeholder"></div>
+            <div className="sticker"> 스티커</div>
+          </div>
+          <button>영상 통화 시작 (데모)</button>
+        </div>
+      </div>
+
+      <p className="sub">
+        은둔형·쉬었음 세대가  
+        “텍스트 → 음성 → 영상(스티커)” 순서로  
+        부담을 줄이면서 사회 활동을 회복하도록 설계했다는 점을  
+        보고서/발표에서 강조하면 좋습니다.
+      </p>
+    </div>
+  );
+}
+
+/* =========================
+   보상 / 레벨 상태
+   ========================= */
+function RewardStatus({ xp, level, pomodoroCount }) {
+  const nextLevelXp = level * 100;
+  const currentLevelXp = (level - 1) * 100;
+  const progress = Math.min(
+    100,
+    ((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100
+  );
+
+  return (
+    <div className="card reward-card">
+      <h2> 나의 보상 & 레벨</h2>
+      <p>
+        현재 레벨: <strong>Lv.{level}</strong>
+      </p>
+      <p>총 경험치: {xp} XP</p>
+      <div className="progress-bar">
+        <div className="progress-inner" style={{ width: `${progress}%` }} />
+      </div>
+      <p className="sub">
+        다음 레벨까지{" "}
+        {nextLevelXp - xp > 0 ? nextLevelXp - xp : 0} XP 남았습니다.  
+        (작은 목표, 활동 기록, 뽀모도로를 통해 XP를 얻을 수 있어요.)
+      </p>
+      <p>오늘 완료한 뽀모도로: {pomodoroCount}회</p>
+      <ul className="sub-list">
+        <li>Lv.1: 챗봇 대화 기능 사용 가능</li>
+        <li>Lv.2: 익명 한줄 대화 해금</li>
+        <li>Lv.3: 음성 · 영상 통화 UI 해금</li>
+      </ul>
+    </div>
+  );
+}
+
+/* =========================
+   메인 앱
+   ========================= */
+function App() {
+  const { xp, level, addXp } = useRewardSystem();
+  const [pomodoroCount, setPomodoroCount] = useState(0);
+
+  const handlePomodoroComplete = () => {
+    setPomodoroCount((prev) => prev + 1);
+    addXp(50); // 뽀모도로 1세션 = 50XP
+    alert("축하합니다! 뽀모도로 1세션을 완료했어요. XP +50 🎉");
+  };
+
+  return (
+    <div className="app">
+      <header>
+        <h1>ActiLink – 적극성·공부의지 & 은둔형·쉬었음 세대 감소 앱</h1>
+        <p>
+          작은 행동부터 시작해서,  
+          공부 의지 향상과 사회적 연결 회복을 동시에 돕는 웹 애플리케이션입니다.
+        </p>
+      </header>
+
+      <main>
+        {/* 상단: 보상/레벨 + 마이크로 골 + 활동 기록 */}
+        <section className="section-grid">
+          <RewardStatus xp={xp} level={level} pomodoroCount={pomodoroCount} />
+          <MicroGoalsSection addXp={addXp} />
+          <ActivityTrackerSection addXp={addXp} />
+        </section>
+
+        {/* 중간: 뽀모도로 + 공부방 */}
+        <section className="section-grid">
+          <PomodoroTimer onComplete={handlePomodoroComplete} />
+          <StudyRooms pomodoroCount={pomodoroCount} />
+        </section>
+
+        {/* 하단: 챗봇 + 익명 채팅 + 통화 */}
+        <section className="section-grid">
+          <ChatbotSection level={level} />
+          <AnonymousChatSection level={level} />
+          <CallSection level={level} />
+        </section>
+      </main>
+
+      <footer>
+        <p>
+          GitHub + Vercel 배포용 데모 앱 ·  
+          “적극성, 공부 의지 향상, 은둔형 외톨이 및 쉬었음 세대 감소”를 목표로 설계된 예시입니다.
+        </p>
+      </footer>
+
+      {/* 기본 스타일 */}
+      <style>{`
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        .app {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #0f172a, #020617);
+          color: #e5e7eb;
+          padding: 20px;
+        }
+        header {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        header h1 {
+          font-size: 1.7rem;
+          margin-bottom: 0.3rem;
+        }
+        header p {
+          font-size: 0.9rem;
+          color: #9ca3af;
+        }
+        main {
+          max-width: 1200px;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+        .section-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          gap: 16px;
+        }
+        .card {
+          background: #020617;
+          border-radius: 12px;
+          padding: 16px;
+          border: 1px solid #1f2937;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+        }
+        .card.inner {
+          background: #020617;
+          border-style: dashed;
+        }
+        .card-locked {
+          opacity: 0.55;
+        }
+        .reward-card {
+          margin-bottom: 10px;
+        }
+        h2 {
+          font-size: 1.2rem;
+          margin-bottom: 0.4rem;
+        }
+        h3 {
+          margin-top: 0;
+        }
+        .sub {
+          font-size: 0.85rem;
+          color: #9ca3af;
+        }
+        .sub-list {
+          font-size: 0.8rem;
+          color: #9ca3af;
+          padding-left: 18px;
+        }
+        input[type="number"],
+        input[type="text"] {
+          margin-left: 6px;
+          margin-top: 4px;
+          padding: 4px 8px;
+          border-radius: 6px;
+          border: 1px solid #374151;
+          background: #020617;
+          color: #e5e7eb;
+        }
+        .timer-display {
+          font-size: 2rem;
+          text-align: center;
+          margin: 12px 0;
+          font-weight: bold;
+        }
+        .btn-row {
+          display: flex;
+          gap: 8px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        button {
+          padding: 6px 12px;
+          border-radius: 999px;
+          border: none;
+          background: #2563eb;
+          color: white;
+          font-size: 0.85rem;
+          cursor: pointer;
+        }
+        button:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+          background: #1d4ed8;
+        }
+
+        footer {
+          margin-top: 20px;
+          text-align: center;
+          font-size: 0.75rem;
+          color: #6b7280;
+        }
+
+        /* 오늘의 작은 목표 */
+        .goal-list {
+          list-style: none;
+          padding: 0;
+          margin: 8px 0;
+        }
+        .goal-item {
+          margin-bottom: 6px;
+          font-size: 0.9rem;
+        }
+        .goal-item input {
+          margin-right: 6px;
+        }
+        .goal-done {
+          text-decoration: line-through;
+          color: #22c55e;
+        }
+        .goal-footer {
+          margin-top: 8px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.8rem;
+        }
+
+        /* 활동 기록 */
+        .activity-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin: 8px 0;
+        }
+        .activity-chart {
+          margin-top: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .activity-row {
+          font-size: 0.8rem;
+        }
+        .activity-label {
+          margin-bottom: 2px;
+        }
+        .activity-bar-bg {
+          width: 100%;
+          height: 8px;
+          background: #020617;
+          border-radius: 999px;
+          border: 1px solid #1f2937;
+          overflow: hidden;
+        }
+        .activity-bar-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #22c55e, #a3e635);
+        }
+
+        /* 공부방 */
+        .room-list {
+          list-style: none;
+          padding: 0;
+          margin: 8px 0;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .room-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 10px;
+          border-radius: 8px;
+          background: #020617;
+          border: 1px solid #1f2937;
+        }
+        .room-item-joined {
+          border-color: #22c55e;
+          background: #022c22;
+        }
+        .room-name {
+          font-weight: 600;
+        }
+        .room-sub {
+          font-size: 0.8rem;
+          color: #9ca3af;
+        }
+        .badge {
+          font-size: 0.75rem;
+          background: #22c55e;
+          color: #022c22;
+          padding: 4px 8px;
+          border-radius: 999px;
+          font-weight: 600;
+        }
+
+        /* 채팅 공통 */
+        .chat-window,
+        .anon-window {
+          margin-top: 10px;
+          border-radius: 8px;
+          border: 1px solid #1f2937;
+          background: #020617;
+          padding: 8px;
+          max-height: 220px;
+          overflow-y: auto;
+          font-size: 0.85rem;
+        }
+        .chat-bot,
+        .chat-user {
+          margin-bottom: 6px;
+          padding: 6px 8px;
+          border-radius: 8px;
+          max-width: 80%;
+        }
+        .chat-bot {
+          background: #0f172a;
+          align-self: flex-start;
+        }
+        .chat-user {
+          background: #1d4ed8;
+          margin-left: auto;
+          text-align: right;
+        }
+        .chat-input-row {
+          display: flex;
+          gap: 6px;
+          margin-top: 8px;
+        }
+        .chat-input-row input {
+          flex: 1;
+        }
+        .anon-msg {
+          padding: 4px 0;
+        }
+
+        /* 통화 영역 */
+        .call-layout {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 12px;
+          margin-top: 8px;
+        }
+        .call-box {
+          border-radius: 8px;
+          border: 1px solid #1f2937;
+          padding: 10px;
+          background: #020617;
+        }
+        .video-preview {
+          position: relative;
+          margin: 8px 0;
+          height: 150px;
+          border-radius: 10px;
+          border: 1px dashed #4b5563;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .face-placeholder {
+          font-size: 3rem;
+        }
+        .sticker {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          font-size: 1.5rem;
+          background: rgba(15, 23, 42, 0.8);
+          padding: 4px 8px;
+          border-radius: 999px;
+        }
+
+        /* 레벨 진행바 */
+        .progress-bar {
+          width: 100%;
+          height: 10px;
+          background: #020617;
+          border-radius: 999px;
+          border: 1px solid #1f2937;
+          margin: 4px 0 8px;
+          overflow: hidden;
+        }
+        .progress-inner {
+          height: 100%;
+          background: linear-gradient(90deg, #22c55e, #a3e635);
+        }
+
+        @media (max-width: 600px) {
+          header h1 {
+            font-size: 1.4rem;
+          }
+          .card {
+            padding: 12px;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export default App;
