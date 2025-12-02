@@ -40,7 +40,7 @@ function MicroGoalsSection({ addXp }) {
     setGoals((prev) =>
       prev.map((g) => {
         if (g.id === id) {
-          if (!g.done) addXp(15); // XP 지급
+          if (!g.done) addXp(15);
           return { ...g, done: !g.done };
         }
         return g;
@@ -61,7 +61,7 @@ function MicroGoalsSection({ addXp }) {
 
   return (
     <div className="card">
-      <h2> 오늘의 작은 목표</h2>
+      <h2>🌱 오늘의 작은 목표</h2>
       <p className="sub">지금 당장 할 수 있는 아주 작은 행동부터 시작해보는 공간입니다.</p>
 
       <ul className="goal-list">
@@ -73,7 +73,9 @@ function MicroGoalsSection({ addXp }) {
                 checked={goal.done}
                 onChange={() => handleToggle(goal.id)}
               />
-              <span className={goal.done ? "goal-done" : ""}>{goal.text}</span>
+              <span className={goal.done ? "goal-done" : ""}>
+                {goal.text}
+              </span>
             </label>
           </li>
         ))}
@@ -105,7 +107,7 @@ function ActivityTrackerSection({ addXp }) {
 
   return (
     <div className="card">
-      <h2> 오늘의 활동 기록</h2>
+      <h2>📊 오늘의 활동 기록</h2>
       <p className="sub">작은 행동도 눈에 보이면 자신감이 생겨요.</p>
 
       <div className="activity-buttons">
@@ -126,7 +128,6 @@ function ActivityTrackerSection({ addXp }) {
     </div>
   );
 }
-
 /* ============================================
    2-1. 뽀모도로 타이머
    ============================================ */
@@ -157,7 +158,7 @@ function PomodoroTimer({ onComplete }) {
     return () => clearInterval(timer);
   }, [running]);
 
-  const fmt = (t) =>
+  const format = (t) =>
     `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(
       2,
       "0"
@@ -178,7 +179,7 @@ function PomodoroTimer({ onComplete }) {
         />
       </label>
 
-      <div className="timer-display">{fmt(seconds)}</div>
+      <div className="timer-display">{format(seconds)}</div>
 
       <button onClick={() => setRunning(true)}>시작</button>
       <button onClick={() => setRunning(false)}>일시정지</button>
@@ -202,14 +203,14 @@ function StudyRooms({ pomodoroCount }) {
   return (
     <div className="card">
       <h2>⚔ 공부 대결 방</h2>
-      <p className="sub">게임처럼 공부하는 공간</p>
+      <p className="sub">게임처럼 경쟁하며 공부할 수 있어요.</p>
 
       <ul>
         {rooms.map((r) => (
-          <li key={r.id}>
+          <li key={r.id} className="room-item">
             {r.name} (평균 {r.avg}회)
             {room === r.id ? (
-              <span> ✔ 참여중</span>
+              <span className="joined">✔ 참여중</span>
             ) : (
               <button onClick={() => setRoom(r.id)}>입장</button>
             )}
@@ -219,7 +220,7 @@ function StudyRooms({ pomodoroCount }) {
 
       {room && (
         <div className="inner-box">
-          <h3>내 기록</h3>
+          <h3>현재 나의 기록</h3>
           오늘 뽀모도로 완료: {pomodoroCount}회
         </div>
       )}
@@ -236,19 +237,20 @@ function ChatbotSection({ level }) {
   ]);
   const [input, setInput] = useState("");
 
-  const send = () => {
+  const sendMessage = () => {
     if (!input.trim()) return;
 
-    const msg = input.trim();
-    const userMsg = { from: "user", text: msg };
+    const userText = input.trim();
+    const userMsg = { from: "user", text: userText };
+
     let reply = "좋아! 아주 작은 행동부터 시작해보자.";
 
-    if (msg.includes("불안") || msg.includes("걱정"))
+    if (userText.includes("불안") || userText.includes("걱정"))
       reply = "불안할 땐 작은 목표 1개만 실행해보는 게 좋아.";
-    if (msg.includes("귀찮") || msg.includes("하기 싫"))
-      reply = "그럴 땐 5분만 해보기! 딱 5분만 하다가 멈춰도 돼.";
-    if (msg.includes("은둔") || msg.includes("사람"))
-      reply = "먼저 익명 채팅부터 시도해보는 건 어때?";
+    if (userText.includes("귀찮") || userText.includes("하기 싫"))
+      reply = "그럴 땐 5분만 해보기! 딱 5분만 하고 멈춰도 돼.";
+    if (userText.includes("은둔") || userText.includes("사람"))
+      reply = "먼저 익명 대화부터 시도해보는 건 어때? 부담이 적어.";
 
     setMsgs((prev) => [...prev, userMsg, { from: "bot", text: reply }]);
     setInput("");
@@ -256,7 +258,7 @@ function ChatbotSection({ level }) {
 
   return (
     <div className="card">
-      <h2> 단계 1: 챗봇 대화하기</h2>
+      <h2>🤖 단계 1: 챗봇과 대화하기</h2>
       <p className="sub">레벨 {level} 이상 사용 가능</p>
 
       <div className="chat-box">
@@ -269,46 +271,47 @@ function ChatbotSection({ level }) {
 
       <input
         value={input}
-        placeholder="메시지 입력..."
+        placeholder="메시지를 입력하세요..."
         onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && send()}
+        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
       />
-      <button onClick={send}>전송</button>
+      <button onClick={sendMessage}>전송</button>
     </div>
   );
 }
-
 /* ============================================
    3-2. 익명 한줄 채팅
    ============================================ */
 function AnonymousChatSection({ level }) {
   const [msgs, setMsgs] = useState([
-    { nick: "익명1", text: "오늘 산책 성공!" },
-    { nick: "익명2", text: "드디어 공부 시작했다!" },
+    { nick: "익명1", text: "오늘 산책 성공했어요!" },
+    { nick: "익명2", text: "드디어 공부 시작했습니다 🔥" },
   ]);
   const [input, setInput] = useState("");
 
+  // 레벨 2 미만이면 잠금 표시
   if (level < 2)
     return (
       <div className="card card-locked">
-        <h2> 단계 2: 익명 한줄 대화</h2>
-        <p>레벨 2부터 사용 가능</p>
+        <h2>🔒 단계 2: 익명 한줄 대화</h2>
+        <p>레벨 2부터 사용 가능합니다.</p>
       </div>
     );
 
   const send = () => {
     if (!input.trim()) return;
-    setMsgs((prev) => [...prev, { nick: "나", text: input }]);
+    setMsgs((prev) => [...prev, { nick: "나(익명)", text: input }]);
     setInput("");
   };
 
   return (
     <div className="card">
       <h2>🗣 단계 2: 익명 한줄 대화</h2>
+      <p className="sub">짧은 한 문장으로 가볍게 소통해보세요.</p>
 
       <div className="chat-box">
         {msgs.map((m, i) => (
-          <div key={i}>
+          <div key={i} className="anon-msg">
             <b>{m.nick}:</b> {m.text}
           </div>
         ))}
@@ -316,7 +319,7 @@ function AnonymousChatSection({ level }) {
 
       <input
         value={input}
-        placeholder="한 줄 남기기..."
+        placeholder="한 문장 남겨보세요..."
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && send()}
       />
@@ -326,50 +329,53 @@ function AnonymousChatSection({ level }) {
 }
 
 /* ============================================
-   3-3. 통화(음성/영상) UI 데모
+   3-3. 통화(음성·영상) UI 데모
    ============================================ */
 function CallSection({ level }) {
+  // 레벨 3 미만 잠금
   if (level < 3)
     return (
       <div className="card card-locked">
-        <h2> 단계 3: 통화 기능</h2>
-        <p>레벨 3부터 사용 가능</p>
+        <h2>🔒 단계 3: 음성·영상 통화</h2>
+        <p>레벨 3부터 사용 가능합니다.</p>
       </div>
     );
 
   return (
     <div className="card">
-      <h2> 단계 3: 음성·영상 통화 (데모)</h2>
+      <h2>📞 단계 3: 음성·영상 통화 (데모)</h2>
+      <p className="sub">실제 연결 기능은 없고, UI 형태만 구현된 데모 화면입니다.</p>
 
       <div className="inner-box">
-        <h3>음성 통화</h3>
-        <button>음성 통화 요청</button>
+        <h3>🎤 음성 통화</h3>
+        <button>음성 통화 요청하기 (데모)</button>
       </div>
 
       <div className="inner-box">
-        <h3>영상 통화 (스티커 적용)</h3>
-        <div className="fake-video"> +  스티커</div>
-        <button>영상 통화 시작</button>
+        <h3>📹 영상 통화 + 얼굴 스티커</h3>
+        <div className="fake-video">
+          😀 <span className="sticker">🦊 스티커 적용됨</span>
+        </div>
+        <button>영상 통화 시작 (데모)</button>
       </div>
     </div>
   );
 }
-
 /* ============================================
    보상·레벨 UI
    ============================================ */
 function RewardStatus({ xp, level, pomodoroCount }) {
   return (
     <div className="card">
-      <h2> 나의 레벨</h2>
-      <p>현재 레벨: {level}</p>
-      <p>총 경험치: {xp}</p>
+      <h2>🎮 나의 레벨 & 보상</h2>
+      <p>현재 레벨: <b>{level}</b></p>
+      <p>총 경험치: {xp} XP</p>
       <p>오늘 뽀모도로 완료: {pomodoroCount}회</p>
 
       <ul className="sub-list">
-        <li>Lv1 → 챗봇 대화</li>
-        <li>Lv2 → 익명 대화</li>
-        <li>Lv3 → 통화 기능 해금</li>
+        <li>Lv.1 → 챗봇 사용 가능</li>
+        <li>Lv.2 → 익명 대화 해금</li>
+        <li>Lv.3 → 음성·영상 통화 해금</li>
       </ul>
     </div>
   );
@@ -383,14 +389,15 @@ function App() {
   const [pomodoroCount, setPomodoroCount] = useState(0);
 
   const onPomodoroDone = () => {
-    setPomodoroCount((n) => n + 1);
+    setPomodoroCount((prev) => prev + 1);
     addXp(50);
-    alert("뽀모도로 완료! XP +50");
+    alert("🎉 뽀모도로 1세션 완료! XP +50");
   };
 
   return (
     <div className="app">
       <h1>ActiLink – 공부 의지 & 사회적 연결 회복 앱</h1>
+      <p className="intro">작은 행동부터 시작해보는 성장 앱</p>
 
       <div className="grid">
         <RewardStatus xp={xp} level={level} pomodoroCount={pomodoroCount} />
@@ -403,18 +410,91 @@ function App() {
         <CallSection level={level} />
       </div>
 
+      {/* ===== 스타일 ===== */}
       <style>{`
-        body { margin:0; background:#0f172a; color:white; font-family:sans-serif; }
-        .app { padding:20px; max-width:1200px; margin:auto; }
-        .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); }
-        .card { background:#1e293b; padding:16px; border-radius:12px; }
-        .card-locked { opacity:0.6; }
-        button { margin-top:6px; padding:6px 12px; border:none; border-radius:8px; background:#2563eb; color:white; cursor:pointer; }
-        .timer-display { font-size:2rem; text-align:center; margin:10px 0; }
-        .chat-box { background:#0f172a; padding:10px; height:150px; overflow-y:auto; border-radius:8px; margin-bottom:8px; }
-        .inner-box { margin-top:10px; padding:10px; background:#0f172a; border-radius:8px; }
-        .goal-done { text-decoration:line-through; color:#22c55e; }
-        .fake-video { background:#334155; padding:20px; border-radius:8px; margin:10px 0; }
+        body { margin: 0; background: #0f172a; color: white; font-family: Arial, sans-serif; }
+        .app { padding: 20px; max-width: 1200px; margin: auto; }
+        h1 { text-align: center; margin-bottom: 10px; }
+        .intro { text-align: center; margin-bottom: 20px; opacity: 0.8; }
+
+        .grid {
+          display: grid;
+          gap: 16px;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .card {
+          background: #1e293b;
+          padding: 16px;
+          border-radius: 12px;
+          box-shadow: 0 0 8px rgba(0,0,0,0.3);
+        }
+
+        .card-locked {
+          opacity: 0.5;
+          pointer-events: none;
+        }
+
+        button {
+          margin-top: 6px;
+          padding: 8px 12px;
+          border: none;
+          border-radius: 8px;
+          background: #2563eb;
+          color: white;
+          cursor: pointer;
+        }
+        button:hover { background: #1d4ed8; }
+
+        input {
+          padding: 6px;
+          border-radius: 6px;
+          border: none;
+          margin-top: 4px;
+        }
+
+        .goal-done { text-decoration: line-through; color: #22c55e; }
+
+        .timer-display {
+          font-size: 2rem;
+          text-align: center;
+          margin: 12px 0;
+        }
+
+        .chat-box {
+          background: #0f172a;
+          padding: 10px;
+          height: 150px;
+          overflow-y: auto;
+          border-radius: 8px;
+          margin-bottom: 8px;
+        }
+
+        .bot-msg { background: #334155; padding: 6px; border-radius: 6px; margin-bottom: 6px; }
+        .user-msg { background: #4b5563; padding: 6px; border-radius: 6px; margin-bottom: 6px; text-align: right; }
+
+        .inner-box {
+          margin-top: 10px;
+          padding: 10px;
+          background: #0f172a;
+          border-radius: 8px;
+        }
+
+        .fake-video {
+          background: #334155;
+          padding: 20px;
+          border-radius: 8px;
+          margin: 10px 0;
+          text-align: center;
+          font-size: 1.3rem;
+        }
+
+        .sticker {
+          background: #fbbf24;
+          padding: 2px 6px;
+          border-radius: 6px;
+          margin-left: 6px;
+        }
       `}</style>
     </div>
   );
