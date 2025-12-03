@@ -2,10 +2,9 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Re:Connect+ – AI 기반 루틴 & 연결 앱</title>
+  <title>Re:Connect+ – AI 기반 루틴 & 연결 플랫폼</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- 라이트모드 · 아이폰 스타일 UI -->
   <style>
     :root {
       --bg: #f5f7fb;
@@ -19,6 +18,8 @@
       --shadow: 0 4px 14px rgba(0,0,0,0.08);
       --shadow-lg: 0 10px 24px rgba(0,0,0,0.12);
     }
+
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -34,12 +35,13 @@
       padding: 20px;
     }
 
-    /* 상단 로고 + 슬로건 */
+    /* 헤더 */
     header {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
       flex-wrap: wrap;
+      gap: 8px;
       margin-bottom: 18px;
     }
 
@@ -63,28 +65,18 @@
       box-shadow: var(--shadow);
     }
 
-    .logo-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-    }
+    .logo-title { font-size: 1.3rem; font-weight: 700; }
 
-    .logo-subtitle {
-      font-size: 0.82rem;
-      color: var(--text-light);
-    }
+    .logo-subtitle { font-size: 0.82rem; color: var(--text-light); }
 
-    .tagline {
-      font-size: 0.75rem;
-      color: var(--text-light);
-      text-align: right;
-    }
+    .tagline { font-size: 0.75rem; color: var(--text-light); text-align: right; }
 
-    /* 상단 상태 표시 */
+    /* 상단 상태 박스 */
     .status-row {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
 
     .status-box {
@@ -97,18 +89,10 @@
       box-shadow: var(--shadow);
     }
 
-    .status-label {
-      font-size: 0.78rem;
-      color: var(--text-light);
-    }
+    .status-label { font-size: 0.78rem; color: var(--text-light); }
+    .status-value { font-size: 1.05rem; font-weight: 700; margin-top: 4px; }
 
-    .status-value {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-top: 4px;
-    }
-
-    /* 네비게이션 탭 */
+    /* 메인 탭 */
     .tabs {
       display: flex;
       gap: 8px;
@@ -137,7 +121,7 @@
       box-shadow: var(--shadow-lg);
     }
 
-    /* 메인 카드 */
+    /* 공통 카드 */
     .card {
       background: var(--card);
       border-radius: var(--radius);
@@ -147,30 +131,17 @@
       margin-bottom: 20px;
     }
 
-    .card-title {
-      font-weight: 700;
-      font-size: 1rem;
-      margin-bottom: 4px;
-    }
+    .card-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+    .card-sub { font-size: 0.8rem; color: var(--text-light); margin-bottom: 16px; }
 
-    .card-sub {
-      font-size: 0.8rem;
-      color: var(--text-light);
-      margin-bottom: 16px;
-    }
-
-    /* XP바 */
-    .xp-container {
-      margin-bottom: 18px;
-    }
-
+    /* XP 바 */
+    .xp-container { margin-bottom: 18px; }
     .xp-header {
       display: flex;
       justify-content: space-between;
       font-size: 0.75rem;
       color: var(--text-light);
     }
-
     .xp-bar {
       width: 100%;
       height: 10px;
@@ -179,7 +150,6 @@
       overflow: hidden;
       margin-top: 6px;
     }
-
     .xp-fill {
       height: 100%;
       width: 0%;
@@ -187,7 +157,7 @@
       transition: width 0.25s;
     }
 
-    /* 체크박스 미션 */
+    /* 미션 리스트 */
     .mission-list {
       display: flex;
       flex-direction: column;
@@ -241,17 +211,131 @@
       cursor: pointer;
     }
 
-    .section {
-      display: none;
+    .btn.secondary {
+      background: #ffffff;
+      color: var(--primary);
+      border: 1px solid var(--primary-soft);
+      box-shadow: none;
+      margin-top: 6px;
     }
-    .section.active {
-      display: block;
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* Social Mission */
+    .difficulty-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .difficulty-btn {
+      flex: 1;
+      min-width: 90px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+
+    .difficulty-btn.active {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .mission-card {
+      padding: 16px;
+      border-radius: var(--radius);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      font-size: 0.86rem;
+    }
+
+    /* Social 내부 */
+    .social-subtabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .social-sub-btn {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: #ffffff;
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+
+    .social-sub-btn.active {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .social-box { }
+
+    /* 채팅창 */
+    #chat-window {
+      height: 170px;
+      background: #ffffff;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 10px;
+      overflow-y: auto;
+      margin-bottom: 8px;
+    }
+
+    .chat-bubble {
+      max-width: 75%;
+      padding: 8px 10px;
+      border-radius: 14px;
+      margin-bottom: 6px;
+      white-space: pre-wrap;
+      font-size: 0.8rem;
+    }
+
+    .chat-ai { background: #f1f5f9; }
+    .chat-user { background: #dbeafe; margin-left: auto; }
+
+    /* 리포트 */
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
+      gap: 12px;
+    }
+
+    .report-card {
+      padding: 14px;
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .report-label { font-size: 0.78rem; color: var(--text-light); }
+    .report-value { font-size: 1.3rem; font-weight: 700; margin-top: 4px; }
+
+    @media (max-width: 640px) {
+      .app { padding: 12px; }
+      header { align-items: flex-start; }
     }
   </style>
 </head>
 
 <body>
 <div class="app">
+  <!-- 헤더 -->
   <header>
     <div class="logo">
       <div class="logo-icon">R</div>
@@ -261,7 +345,7 @@
       </div>
     </div>
     <div class="tagline">
-      작은 행동 → 루틴 → 연결 회복  
+      적극성 · 공부 의지 · 사회적 연결을<br/>작은 행동부터 회복하는 앱
     </div>
   </header>
 
@@ -281,21 +365,21 @@
     </div>
   </div>
 
-  <!-- 탭 -->
+  <!-- 메인 탭 -->
   <div class="tabs">
     <button class="tab-btn active" data-tab="home">🏠 홈</button>
-    <button class="tab-btn" data-tab="ai">🤖 AI Lab</button>
+    <button class="tab-btn" data-tab="mission">🎯 Social Mission</button>
     <button class="tab-btn" data-tab="rival">🎮 Rival</button>
     <button class="tab-btn" data-tab="social">💬 Social</button>
     <button class="tab-btn" data-tab="report">📊 리포트</button>
   </div>
 
-  <!-- 메인 카드 시작 -->
+  <!-- 메인 카드 -->
   <div class="card">
     <div class="card-title" id="main-title">오늘의 작은 루틴</div>
-    <div class="card-sub" id="main-sub">작은 행동을 하면 XP가 쌓입니다</div>
+    <div class="card-sub" id="main-sub">작은 행동을 하면 XP가 쌓입니다.</div>
 
-    <!-- HOME SECTION -->
+    <!-- HOME -->
     <div class="section active" id="section-home">
       <div class="xp-container">
         <div class="xp-header">
@@ -309,49 +393,46 @@
 
       <div class="emotion-box">
         <div style="font-size:0.8rem;">오늘 기분은 어땠나요?</div>
-        <input id="emotion-input" class="emotion-input" placeholder="예: 아무것도 하기 싫었어요..."/>
+        <input id="emotion-input" class="emotion-input" placeholder="예: 아무것도 하기 싫었어요..." />
         <button id="emotion-btn" class="btn">기록 + AI 한마디</button>
         <div id="emotion-response" style="font-size:0.75rem; margin-top:6px; color:var(--text-light);"></div>
       </div>
     </div>
-    <!-- AI LAB SECTION -->
-    <div class="section" id="section-ai">
-      <div style="margin-bottom:16px;font-size:0.9rem;font-weight:600;">
-        역할 기반 AI 선택
+
+    <!-- SOCIAL MISSION -->
+    <div class="section" id="section-mission">
+      <div style="margin-bottom:8px;font-size:0.9rem;font-weight:600;">
+        난이도 선택형 사회적 미션
+      </div>
+      <div style="font-size:0.8rem;color:var(--text-light);margin-bottom:10px;">
+        은둔형 외톨이·쉬었음 세대를 위해, <strong>초보/보통/고급</strong> 수준에 맞는
+        작은 사회적 행동 미션을 추천합니다.
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
-        <div class="card" style="padding:14px;">
-          <div style="font-weight:600;">ChatGPT</div>
-          <div style="font-size:0.78rem;color:var(--text-light);margin-top:6px;">
-            공부 코치 · 개념 설명 · 과제 도움
-          </div>
+      <div class="difficulty-row">
+        <button class="difficulty-btn active" data-diff="easy">초보</button>
+        <button class="difficulty-btn" data-diff="medium">보통</button>
+        <button class="difficulty-btn" data-diff="hard">고급</button>
+      </div>
+
+      <div class="mission-card">
+        <div style="font-size:0.78rem;color:var(--text-light);">오늘의 미션</div>
+        <div id="social-mission-text" style="margin-top:6px;font-size:0.9rem;font-weight:600;">
+          로딩 중...
+        </div>
+        <div id="social-mission-xp" style="margin-top:4px;font-size:0.78rem;color:var(--text-light);">
+          완료 시 +20 XP
         </div>
 
-        <div class="card" style="padding:14px;">
-          <div style="font-weight:600;">Gemini</div>
-          <div style="font-size:0.78rem;color:var(--text-light);margin-top:6px;">
-            루틴 설계 · 일정 추천
-          </div>
-        </div>
+        <button id="social-mission-refresh" class="btn secondary">다시 뽑기</button>
+        <button id="social-mission-complete" class="btn">미션 완료하기</button>
 
-        <div class="card" style="padding:14px;">
-          <div style="font-weight:600;">Claude</div>
-          <div style="font-size:0.78rem;color:var(--text-light);margin-top:6px;">
-            감정 상담 · 저널링 파트너
-          </div>
-        </div>
-
-        <div class="card" style="padding:14px;">
-          <div style="font-weight:600;">Grok</div>
-          <div style="font-size:0.78rem;color:var(--text-light);margin-top:6px;">
-            도발 기반 동기부여 Rival
-          </div>
+        <div id="social-mission-msg" style="margin-top:8px;font-size:0.78rem;color:var(--text-light);">
         </div>
       </div>
     </div>
 
-    <!-- RIVAL SECTION -->
+    <!-- RIVAL -->
     <div class="section" id="section-rival">
       <div style="margin-bottom:14px;font-size:0.9rem;font-weight:600;">
         AI Rival 점수 경쟁
@@ -376,121 +457,117 @@
       <button id="rival-recalc" class="btn" style="margin-top:14px;">점수 다시 계산하기</button>
     </div>
 
-    <!-- SOCIAL SECTION -->
+    <!-- SOCIAL -->
     <div class="section" id="section-social">
       <div style="margin-bottom:14px;font-size:0.9rem;font-weight:600;">
         Social Connect
       </div>
 
-      <!-- 작은 탭 -->
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <button class="tab-btn social-sub active" data-social="ai-chat" style="flex:1;">AI 대화</button>
-        <button class="tab-btn social-sub" data-social="anon" style="flex:1;">익명 채팅</button>
-        <button class="tab-btn social-sub" data-social="voice" style="flex:1;">보이스톡</button>
+      <div class="social-subtabs">
+        <button class="social-sub-btn active" data-social="ai-chat">AI 대화</button>
+        <button class="social-sub-btn" data-social="anon">익명 채팅(구상)</button>
+        <button class="social-sub-btn" data-social="voice">보이스톡(구상)</button>
       </div>
 
-      <!-- AI CHAT WINDOW -->
+      <!-- AI Chat -->
       <div class="social-box" id="social-ai-chat">
-        <div id="chat-window" style="
-          height:160px;background:white;border-radius:var(--radius);
-          border:1px solid var(--border);padding:10px;overflow-y:auto;
-        ">
-          <div style="
-            background:#f1f5f9;padding:8px 10px;border-radius:var(--radius);
-            width:max-content;max-width:75%;margin-bottom:6px;
-          ">
+        <div id="chat-window">
+          <div class="chat-bubble chat-ai">
             안녕하세요! 편하게 말 걸어주세요 😊
           </div>
         </div>
-
         <input id="chat-input" class="emotion-input" placeholder="예: 오늘 좀 힘들었어요..." />
         <button id="chat-send" class="btn">전송</button>
       </div>
 
       <!-- 익명 채팅 안내 -->
       <div class="social-box" id="social-anon" style="display:none;">
-        <div style="padding:14px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);">
-          익명 커뮤니티는 데모 버전에서 준비 중입니다.<br/>
-          욕설 필터링 + 가벼운 응원 메시지 공유 공간으로 확장 예정!
+        <div style="padding:14px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);font-size:0.8rem;">
+          실제 서비스에서는 <strong>랜덤 익명 닉네임</strong>으로 접속하여
+          공부 인증, 감정 나눔 등을 할 수 있는 채팅방으로 확장할 예정입니다.
+          이 데모에서는 기획 의도만 보여줍니다.
         </div>
       </div>
 
       <!-- 보이스톡 안내 -->
       <div class="social-box" id="social-voice" style="display:none;">
-        <div style="padding:14px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);">
-          보이스톡은 실제 앱에서는 전화번호 없이 AI 또는 사용자와 연결될 예정입니다.<br/>
-          데모에서는 UI 개념만 제공됩니다.
+        <div style="padding:14px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);font-size:0.8rem;">
+          전화번호 없이 앱 내부에서만 통화되는 <strong>익명 보이스톡</strong> 기능을
+          계획 중입니다. 은둔형 외톨이도 부담 없이 짧은 대화를 시도할 수 있도록
+          3~5분 제한 통화로 설계할 수 있습니다.
         </div>
       </div>
     </div>
 
-    <!-- REPORT SECTION -->
+    <!-- REPORT -->
     <div class="section" id="section-report">
       <div style="margin-bottom:14px;font-size:0.9rem;font-weight:600;">
         활동 리포트 요약
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
-        <div class="card" style="padding:14px;">
-          <div style="font-size:0.78rem;color:var(--text-light);">누적 완료한 미션</div>
-          <div id="report-goals" style="font-size:1.3rem;font-weight:700;margin-top:4px;">0</div>
+      <div class="report-grid">
+        <div class="report-card">
+          <div class="report-label">누적 완료한 기본 미션</div>
+          <div class="report-value" id="report-goals">0</div>
         </div>
-
-        <div class="card" style="padding:14px;">
-          <div style="font-size:0.78rem;color:var(--text-light);">감정 기록 수</div>
-          <div id="report-emotions" style="font-size:1.3rem;font-weight:700;margin-top:4px;">0</div>
+        <div class="report-card">
+          <div class="report-label">감정 기록 수</div>
+          <div class="report-value" id="report-emotions">0</div>
         </div>
-
-        <div class="card" style="padding:14px;">
-          <div style="font-size:0.78rem;color:var(--text-light);">AI 대화 수</div>
-          <div id="report-chats" style="font-size:1.3rem;font-weight:700;margin-top:4px;">0</div>
+        <div class="report-card">
+          <div class="report-label">AI 대화 수</div>
+          <div class="report-value" id="report-chats">0</div>
         </div>
-
-        <div class="card" style="padding:14px;">
-          <div style="font-size:0.78rem;color:var(--text-light);">오늘의 점수</div>
-          <div id="report-today" style="font-size:1.3rem;font-weight:700;margin-top:4px;">0 점</div>
+        <div class="report-card">
+          <div class="report-label">사회적 미션 완료 수</div>
+          <div class="report-value" id="report-social-missions">0</div>
+        </div>
+        <div class="report-card">
+          <div class="report-label">오늘의 점수</div>
+          <div class="report-value" id="report-today">0 점</div>
         </div>
       </div>
     </div>
   </div> <!-- card 끝 -->
 
   <script>
-    /* ───────────────────────
-         기본 상태 저장
-    ─────────────────────── */
-    const STORAGE_KEY = "reconnect_state_v2";
+    /* ───────── 상태 저장 ───────── */
+    const STORAGE_KEY = "reconnect_state_v3";
     let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 
-    // 기본값 설정
-    if (!state.xp) state = {
-      xp: 0,
-      level: 1,
-      totalGoals: 0,
-      todayGoals: 0,
-      emotionLogs: 0,
-      aiChats: 0
-    };
+    if (!state.xp && state.xp !== 0) {
+      state = {
+        xp: 0,
+        level: 1,
+        totalGoals: 0,
+        todayGoals: 0,
+        emotionLogs: 0,
+        aiChats: 0,
+        socialMissions: 0
+      };
+    }
 
-    function save() {
+    function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    function updateTopUI() {
-      document.getElementById("level-display").textContent = state.level;
+    function updateXPUI() {
+      const level = Math.floor(state.xp / 50) + 1;
+      state.level = level;
+
+      document.getElementById("level-display").textContent = level;
       document.getElementById("xp-display").textContent = state.xp;
       document.getElementById("today-goals-count").textContent = state.todayGoals;
-      document.getElementById("level-inline").textContent = state.level;
+      document.getElementById("level-inline").textContent = level;
       document.getElementById("xp-inline").textContent = state.xp;
 
-      const nextXP = state.level * 50;
+      const nextXP = level * 50;
       const fill = Math.min(100, (state.xp / nextXP) * 100);
       document.getElementById("xp-fill").style.width = fill + "%";
     }
-    updateTopUI();
+    updateXPUI();
 
-    /* ───────────────────────
-         홈 – 미션 목록
-    ─────────────────────── */
+    /* ───────── 홈 미션 ───────── */
     const missions = [
       "물 한 컵 마시기",
       "5분만 공부하기",
@@ -498,46 +575,43 @@
       "창문 열고 바람 쐬기",
       "오늘 느낀 점 한 줄 적기"
     ];
+    const missionListEl = document.getElementById("mission-list");
 
-    const missionList = document.getElementById("mission-list");
-
-    missions.forEach((m) => {
-      const div = document.createElement("div");
-      div.className = "mission-item";
+    missions.forEach((text) => {
+      const item = document.createElement("div");
+      item.className = "mission-item";
 
       const cb = document.createElement("input");
       cb.type = "checkbox";
 
       const label = document.createElement("span");
-      label.textContent = m;
+      label.textContent = text;
 
       cb.addEventListener("change", () => {
         if (cb.checked) {
-          div.classList.add("completed");
+          item.classList.add("completed");
           state.xp += 10;
           state.todayGoals++;
           state.totalGoals++;
         } else {
-          div.classList.remove("completed");
+          item.classList.remove("completed");
         }
-        state.level = Math.floor(state.xp / 50) + 1;
-        save();
-        updateTopUI();
+        saveState();
+        updateXPUI();
+        updateReport();
       });
 
-      div.appendChild(cb);
-      div.appendChild(label);
-      missionList.appendChild(div);
+      item.appendChild(cb);
+      item.appendChild(label);
+      missionListEl.appendChild(item);
     });
 
-    /* ───────────────────────
-         감정 기록
-    ─────────────────────── */
+    /* ───────── 감정 기록 ───────── */
     const emotionBtn = document.getElementById("emotion-btn");
     const emotionInput = document.getElementById("emotion-input");
     const emotionResponse = document.getElementById("emotion-response");
 
-    const emotionReplies = [
+    const emotionMsgs = [
       "괜찮아요. 오늘은 작은 것 하나만 해봐요.",
       "힘든 날도 있어요. 그래도 기록한 당신이 대단해요.",
       "조금씩 나아지면 돼요. 저는 항상 여기 있어요.",
@@ -547,150 +621,222 @@
     emotionBtn.addEventListener("click", () => {
       if (!emotionInput.value.trim()) return;
       state.emotionLogs++;
-      save();
-      const msg = emotionReplies[Math.floor(Math.random()*emotionReplies.length)];
+      saveState();
+      const msg = emotionMsgs[Math.floor(Math.random() * emotionMsgs.length)];
       emotionResponse.textContent = msg;
       emotionInput.value = "";
       updateReport();
     });
 
-    /* ───────────────────────
-         탭 전환
-    ─────────────────────── */
-    const tabs = document.querySelectorAll(".tab-btn");
+    /* ───────── 탭 전환 ───────── */
+    const mainTabs = document.querySelectorAll(".tab-btn");
     const sections = {
       home: document.getElementById("section-home"),
-      ai: document.getElementById("section-ai"),
+      mission: document.getElementById("section-mission"),
       rival: document.getElementById("section-rival"),
       social: document.getElementById("section-social"),
-      report: document.getElementById("section-report"),
+      report: document.getElementById("section-report")
+    };
+    const mainTitle = document.getElementById("main-title");
+    const mainSub = document.getElementById("main-sub");
+
+    const tabText = {
+      home: ["오늘의 작은 루틴", "작은 행동을 하면 XP가 쌓입니다."],
+      mission: ["Social Mission", "난이도에 맞는 사회적 미션으로 적극성을 키워요."],
+      rival: ["Rival Battle", "AI Rival과 점수 경쟁을 하며 재미있게 동기부여를 합니다."],
+      social: ["Social Connect", "AI 대화와 익명 연결로 고립감을 줄입니다."],
+      report: ["리포트", "지금까지의 행동 데이터를 요약해서 보여줍니다."]
     };
 
-    tabs.forEach((btn) => {
+    mainTabs.forEach(btn => {
       btn.addEventListener("click", () => {
-        tabs.forEach(b=>b.classList.remove("active"));
+        mainTabs.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
 
         const tab = btn.dataset.tab;
-        Object.keys(sections).forEach(id => {
-          sections[id].classList.toggle("active", id===tab);
+        Object.keys(sections).forEach(key => {
+          sections[key].classList.toggle("active", key === tab);
         });
+
+        mainTitle.textContent = tabText[tab][0];
+        mainSub.textContent = tabText[tab][1];
 
         if (tab === "rival") recalcRival();
         if (tab === "report") updateReport();
-
-        document.getElementById("main-title").textContent =
-          btn.textContent.replace(/[^가-힣a-zA-Z ]/g, "");
       });
     });
 
-    /* ───────────────────────
-         Rival Battle
-    ─────────────────────── */
+    /* ───────── Social Mission ───────── */
+    const diffButtons = document.querySelectorAll(".difficulty-btn");
+    const missionTextEl = document.getElementById("social-mission-text");
+    const missionXpLabel = document.getElementById("social-mission-xp");
+    const missionMsgEl = document.getElementById("social-mission-msg");
+
+    const diffMissions = {
+      easy: [
+        "오늘 기분을 AI 채팅에 한 줄만 남기기",
+        "물 한 컵 마시고, '마셨다!'라고 스스로에게 말해보기",
+        "창문 열고 10초 동안 깊게 숨 들이마시기",
+        "Social 탭의 AI에게 그냥 이모지 하나만 보내기 😊",
+        "오늘 스스로 칭찬 한 마디 속으로 해보기"
+      ],
+      medium: [
+        "1분 동안 집 안을 천천히 걸어 다니면서 몸 풀어보기",
+        "밖에 나가서 하늘 한 번 올려다보고 돌아오기",
+        "오늘 할 일 1개를 적고, Social 탭 AI에게 공유하기",
+        "과제나 공부 관련 질문 1개를 떠올리고 메모해두기",
+        "방 한 구석만 1분 동안 정리해보기"
+      ],
+      hard: [
+        "친구나 가족에게 '잘 지내?' 메시지 보내기",
+        "학교/과/공부 관련해서 궁금한 점 하나를 정리해서 메모하고 나중에 물어보기",
+        "오늘 공부 계획을 간단히 적고 Social 탭 AI에게 공유하기",
+        "집 근처를 5분만 산책하며 오늘 있었던 일을 떠올려보기",
+        "오늘 감사한 일 1가지를 떠올려서 메모장에 적기"
+      ]
+    };
+
+    const diffXp = {
+      easy: 20,
+      medium: 30,
+      hard: 40
+    };
+
+    let currentDiff = "easy";
+    let currentMission = "";
+
+    function pickMission() {
+      const pool = diffMissions[currentDiff];
+      currentMission = pool[Math.floor(Math.random() * pool.length)];
+      missionTextEl.textContent = currentMission;
+      missionXpLabel.textContent = `완료 시 +${diffXp[currentDiff]} XP`;
+      missionMsgEl.textContent = "";
+    }
+
+    diffButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        diffButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentDiff = btn.dataset.diff;
+        pickMission();
+      });
+    });
+
+    document.getElementById("social-mission-refresh")
+      .addEventListener("click", pickMission);
+
+    document.getElementById("social-mission-complete")
+      .addEventListener("click", () => {
+        if (!currentMission) return;
+        state.xp += diffXp[currentDiff];
+        state.socialMissions++;
+        saveState();
+        updateXPUI();
+        updateReport();
+        missionMsgEl.textContent = "잘 했어요! 오늘도 작은 연결 한 걸음 성공 👏";
+      });
+
+    pickMission();
+
+    /* ───────── Rival ───────── */
     const rivalNames = ["GPT", "Gemini", "Claude", "Grok"];
-
     function recalcRival() {
-      const myScore = state.todayGoals * 20 + state.emotionLogs * 5 + state.aiChats * 3;
-      const rivalScore = Math.floor(Math.random()*70)+20;
+      const myScore =
+        state.todayGoals * 20 +
+        state.emotionLogs * 5 +
+        state.aiChats * 3 +
+        state.socialMissions * 15;
 
-      const name = rivalNames[Math.floor(Math.random()*rivalNames.length)];
+      const rivalScore = Math.floor(Math.random() * 70) + 20;
+      const name = rivalNames[Math.floor(Math.random() * rivalNames.length)];
 
       document.getElementById("my-score").textContent = myScore;
       document.getElementById("rival-score").textContent = rivalScore;
       document.getElementById("rival-name").textContent = `AI Rival (${name})`;
 
-      const result = document.getElementById("rival-result");
-      if (myScore > rivalScore) result.textContent = "🎉 오늘은 당신의 승리!";
-      else if (myScore === rivalScore) result.textContent = "🤝 오늘은 동점이에요!";
-      else result.textContent = "🔥 Rival이 앞서가요! 지금 미션 하나만 더!";
-      
+      const resultEl = document.getElementById("rival-result");
+      if (myScore > rivalScore) {
+        resultEl.textContent = "🎉 오늘은 당신의 승리! 이 흐름을 이어가 볼까요?";
+      } else if (myScore === rivalScore) {
+        resultEl.textContent = "🤝 오늘은 동점이에요. 내일은 미션 하나만 더!";
+      } else {
+        resultEl.textContent = "🔥 Rival이 앞서가요! 지금이라도 Social Mission 하나 도전?";
+      }
+
       updateReport();
     }
-
     document.getElementById("rival-recalc").addEventListener("click", recalcRival);
 
-    /* ───────────────────────
-         Social - AI Chat
-    ─────────────────────── */
+    /* ───────── Social – AI Chat ───────── */
     const chatWindow = document.getElementById("chat-window");
     const chatInput = document.getElementById("chat-input");
     const chatSend = document.getElementById("chat-send");
 
     const aiReplies = [
-      "그럴 수 있어요. 괜찮아요.",
-      "오늘 참 고생했어요.",
-      "저랑 조금 더 이야기해줄래요?",
-      "조금씩 나아질 거예요.",
-      "당신은 잘하고 있어요."
+      "그럴 수 있어요. 오늘 여기까지 온 것만 해도 잘하고 있어요.",
+      "오늘 많이 힘들었겠네요. 그래도 저랑 이야기해줘서 고마워요.",
+      "조금씩 나아질 거예요. 너무 조급해하지 않아도 괜찮아요.",
+      "이야기를 꺼낸 것 자체가 큰 용기예요."
     ];
-
-    chatSend.addEventListener("click", () => {
-      if (!chatInput.value.trim()) return;
-
-      // 사용자 말풍선
-      appendChat(chatInput.value, "user");
-      chatInput.value = "";
-
-      state.aiChats++;
-      save();
-      updateReport();
-
-      // AI 응답
-      const reply = aiReplies[Math.floor(Math.random()*aiReplies.length)];
-      setTimeout(()=>appendChat(reply,"ai"),300);
-    });
 
     function appendChat(text, who) {
       const bubble = document.createElement("div");
+      bubble.className = "chat-bubble " + (who === "user" ? "chat-user" : "chat-ai");
       bubble.textContent = text;
-      bubble.style.maxWidth = "75%";
-      bubble.style.padding = "8px 10px";
-      bubble.style.borderRadius = "14px";
-      bubble.style.marginBottom = "6px";
-      bubble.style.whiteSpace = "pre-wrap";
-
-      if (who === "user") {
-        bubble.style.background = "#dbeafe";
-        bubble.style.marginLeft = "auto";
-      } else {
-        bubble.style.background = "#f1f5f9";
-      }
-
       chatWindow.appendChild(bubble);
       chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    /* ───────────────────────
-         Social 내부 탭
-    ─────────────────────── */
-    const socialTabs = document.querySelectorAll(".social-sub");
+    chatSend.addEventListener("click", () => {
+      const txt = chatInput.value.trim();
+      if (!txt) return;
+      appendChat(txt, "user");
+      chatInput.value = "";
+      state.aiChats++;
+      saveState();
+      updateReport();
+
+      const reply = aiReplies[Math.floor(Math.random() * aiReplies.length)];
+      setTimeout(() => appendChat(reply, "ai"), 300);
+    });
+
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") chatSend.click();
+    });
+
+    /* ───────── Social 내부 탭 ───────── */
+    const socialTabBtns = document.querySelectorAll(".social-sub-btn");
     const socialBoxes = {
       "ai-chat": document.getElementById("social-ai-chat"),
       anon: document.getElementById("social-anon"),
-      voice: document.getElementById("social-voice"),
+      voice: document.getElementById("social-voice")
     };
 
-    socialTabs.forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        socialTabs.forEach(b=>b.classList.remove("active"));
+    socialTabBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        socialTabBtns.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         const key = btn.dataset.social;
-        Object.keys(socialBoxes).forEach(k=>{
-          socialBoxes[k].style.display = k===key ? "block":"none";
+        Object.keys(socialBoxes).forEach(k => {
+          socialBoxes[k].style.display = (k === key) ? "block" : "none";
         });
       });
     });
 
-    /* ───────────────────────
-         Report 업데이트
-    ─────────────────────── */
+    /* ───────── 리포트 ───────── */
     function updateReport() {
       document.getElementById("report-goals").textContent = state.totalGoals;
       document.getElementById("report-emotions").textContent = state.emotionLogs;
       document.getElementById("report-chats").textContent = state.aiChats;
+      document.getElementById("report-social-missions").textContent = state.socialMissions;
 
-      const todayScore = state.todayGoals * 20 + state.emotionLogs * 5 + state.aiChats * 3;
-      document.getElementById("report-today").textContent = `${todayScore} 점`;
+      const score =
+        state.todayGoals * 20 +
+        state.emotionLogs * 5 +
+        state.aiChats * 3 +
+        state.socialMissions * 15;
+
+      document.getElementById("report-today").textContent = score + " 점";
     }
     updateReport();
   </script>
